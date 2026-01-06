@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build:packages && cd apps/solar-demo && npm run build",
+  "outputDirectory": "apps/solar-demo/.next",
+  "installCommand": "npm install",
+  "framework": "nextjs"
+}
