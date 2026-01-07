@@ -26,51 +26,26 @@ export interface QuoteResult {
 }
 
 // Pricing (Malaysia Market)
-const PRICING = {
-  small: 3.50,  // < 5kW: RM 3.50/watt
-  medium: 3.25, // 5-10kW: RM 3.25/watt  
-  large: 3.00   // > 10kW: RM 3.00/watt
-};
-
-const TNB_TARIFF = 0.57; // RM per kWh
+const PRICING = { small: 3.50, medium: 3.25, large: 3.00 };
+const TNB_TARIFF = 0.57;
 const SUN_HOURS = 4.5;
 const PANEL_WATTAGE = 550;
 
 export class QuoteGenerator {
   generate(request: QuoteRequest): QuoteResult {
-    // Calculate system size from bill
     const monthlyKwh = request.monthlyBill / TNB_TARIFF;
     const dailyKwh = monthlyKwh / 30;
-    const systemSize = Math.ceil((dailyKwh / SUN_HOURS) * 2) / 2; // Round to 0.5kW
-    
-    // Panel count
+    const systemSize = Math.ceil((dailyKwh / SUN_HOURS) * 2) / 2;
     const panelCount = Math.ceil((systemSize * 1000) / PANEL_WATTAGE);
-    
-    // Price per watt
-    const pricePerWatt = systemSize < 5 ? PRICING.small 
-      : systemSize <= 10 ? PRICING.medium 
-      : PRICING.large;
-    
-    // Total price
+    const pricePerWatt = systemSize < 5 ? PRICING.small : systemSize <= 10 ? PRICING.medium : PRICING.large;
     const systemCost = systemSize * 1000 * pricePerWatt;
-    const installCost = systemCost * 0.15;
-    const permitCost = 500;
-    const totalPrice = Math.round(systemCost + installCost + permitCost);
-    
-    // Savings
+    const totalPrice = Math.round(systemCost * 1.15 + 500);
     const monthlyProduction = systemSize * SUN_HOURS * 30 * 0.85;
     const monthlySavings = Math.min(monthlyProduction * TNB_TARIFF, request.monthlyBill * 0.9);
     const yearlySavings = monthlySavings * 12;
-    
-    // Payback
     const paybackPeriod = totalPrice / yearlySavings;
-    
-    // Lifetime (25 years with degradation)
     let lifetime = 0;
     for (let y = 0; y < 25; y++) lifetime += yearlySavings * Math.pow(0.995, y);
-    
-    // CO2
-    const co2Offset = Math.round(monthlyProduction * 12 * 0.78);
     
     return {
       id: generateId('quote'),
@@ -79,20 +54,15 @@ export class QuoteGenerator {
       panelCount,
       pricePerWatt,
       totalPrice,
-      estimatedSavings: {
-        monthly: Math.round(monthlySavings),
-        yearly: Math.round(yearlySavings),
-        lifetime: Math.round(lifetime)
-      },
+      estimatedSavings: { monthly: Math.round(monthlySavings), yearly: Math.round(yearlySavings), lifetime: Math.round(lifetime) },
       paybackPeriod: Math.round(paybackPeriod * 10) / 10,
-      co2Offset,
+      co2Offset: Math.round(monthlyProduction * 12 * 0.78),
       generatedAt: Date.now(),
       status: 'draft'
     };
   }
 }
 
-// Solar Worker with Governance
 export class SolarWorker {
   private quoteGen = new QuoteGenerator();
   private cfo: CFO;
@@ -102,28 +72,17 @@ export class SolarWorker {
     this.cfo = new CFO({ monthlyBudget: config.monthlyBudget || 10000 });
   }
 
-  async generateQuote(request: QuoteRequest): Promise<{
-    quote: QuoteResult;
-    classification: ClassificationResult;
-    requiresConfirmation: boolean;
-  }> {
-    // Check vocabulary
+  async generateQuote(request: QuoteRequest) {
     const vocabCheck = checkVocabulary(request.address);
-    if (!vocabCheck.compliant) {
-      console.warn('Vocabulary violations:', vocabCheck.violations);
-    }
+    if (!vocabCheck.compliant) console.warn('Vocabulary violations:', vocabCheck.violations);
     
-    // Generate quote
     const quote = this.quoteGen.generate(request);
-    
-    // Classify
     const classification = this.classifier.classify({
       actionType: 'generate_quote',
       userInput: `Generate quote for ${request.customerName}`,
       estimatedSpend: 0
     });
     
-    // Log proof
     ProofLedger.log({
       type: 'quote_generated',
       timestamp: new Date(),
@@ -133,14 +92,10 @@ export class SolarWorker {
       context: { quoteId: quote.id, customer: request.customerName }
     });
     
-    return {
-      quote,
-      classification,
-      requiresConfirmation: classification.type === 'B'
-    };
+    return { quote, classification, requiresConfirmation: classification.type === 'B' };
   }
 
-  async confirmQuote(quoteId: string): Promise<{ success: boolean; proofId: string }> {
+  async confirmQuote(quoteId: string) {
     const proof = ProofLedger.log({
       type: 'quote_confirmed',
       timestamp: new Date(),
@@ -148,11 +103,6 @@ export class SolarWorker {
       action: 'confirm_quote',
       context: { quoteId }
     });
-    
     return { success: true, proofId: proof.id };
   }
 }
-
-// Exports
-export { QuoteGenerator, SolarWorker };
-export type { QuoteRequest, QuoteResult };
