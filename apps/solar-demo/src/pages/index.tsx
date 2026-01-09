@@ -16,6 +16,7 @@ interface Quote {
   totalPrice: number;
   estimatedSavings: { monthly: number; yearly: number; lifetime: number };
   paybackPeriod: number;
+  pricePerWatt: number;
 }
 
 interface Classification {
