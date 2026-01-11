@@ -16,3 +16,64 @@ body { background: #0f172a; color: #ffffff; line-height: 1.6; }
 .badge-c { background: #fee2e2; color: #991b1b; }
 .grid { display: grid; gap: 1rem; }
 .grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+/* ========================================
+   MOBILE RESPONSIVE - FIDOS BD Manager v4.2
+   ======================================== */
+
+/* Mobile: Stack everything */
+@media (max-width: 768px) {
+  /* Stats row: 2 columns instead of 4 */
+  .stats-grid, div[style*="repeat(4, 1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  /* Main layout: stack instead of 2fr 1fr */
+  div[style*="2fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Pipeline summary: stack */
+  div[style*="repeat(3, 1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  /* Table scroll */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  /* Smaller text */
+  h1 { font-size: 1.5rem !important; }
+  h2 { font-size: 1.25rem !important; }
+  
+  /* Tighter padding */
+  .card, div[style*="padding: 1.5rem"] {
+    padding: 1rem !important;
+  }
+  
+  /* Stack header */
+  header > div {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    align-items: flex-start !important;
+  }
+  
+  /* Full width buttons */
+  button {
+    min-height: 44px;
+  }
+}
+
+/* Small mobile: even tighter */
+@media (max-width: 480px) {
+  div[style*="repeat(2, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+  
+  body {
+    font-size: 14px;
+  }
+}
