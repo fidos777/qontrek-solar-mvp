@@ -62,5 +62,37 @@
       "AUTHORITY: apps/solar-demo/src/actions/quoteHandler.ts - 'handleCreateQuote()' missing authority parameter",
       "AUTHORITY: apps/solar-demo/src/actions/quoteHandler.ts - 'quoteAction()' missing authority parameter"
     ]
+  },
+  {
+    "timestamp": "2026-01-12T04:19:23.351Z",
+    "commit_hash": "HEAD",
+    "story_id": "S-001",
+    "status": "HARD_FAIL",
+    "failed_checks": [
+      "FORBIDDEN: apps/solar-demo/qontrek/governance/arbitrator.yaml matches deny pattern qontrek/**",
+      "FORBIDDEN: apps/solar-demo/qontrek/governance/policy.yaml matches deny pattern qontrek/**",
+      "FORBIDDEN: apps/solar-demo/qontrek/governance/scan_manifest.yaml matches deny pattern qontrek/**",
+      "FORBIDDEN: apps/solar-demo/qontrek/ledger/validation_log.json matches deny pattern qontrek/**",
+      "FORBIDDEN: apps/solar-demo/qontrek/ledger/validation_log.json matches deny pattern ledger/**",
+      "FORBIDDEN: apps/solar-demo/qontrek/mcp/validate.ts matches deny pattern qontrek/**",
+      "FORBIDDEN: apps/solar-demo/ralph/PRD.md matches deny pattern ralph/**",
+      "FORBIDDEN: apps/solar-demo/ralph/agents.md matches deny pattern ralph/**",
+      "FORBIDDEN: apps/solar-demo/ralph/prd.json matches deny pattern ralph/**",
+      "FORBIDDEN: apps/solar-demo/ralph/progress.txt matches deny pattern ralph/**",
+      "FORBIDDEN: apps/solar-demo/ralph/ralph_hook_instructions.md matches deny pattern ralph/**",
+      "PATTERN: apps/solar-demo/qontrek/governance/scan_manifest.yaml contains 'eval(' - Security risk",
+      "PATTERN: apps/solar-demo/qontrek/governance/scan_manifest.yaml contains 'process.env' - Direct env access forbidden - use config",
+      "PATTERN: apps/solar-demo/ralph/agents.md contains 'eval(' - Security risk",
+      "PATTERN: apps/solar-demo/ralph/agents.md contains 'process.env' - Direct env access forbidden - use config",
+      "PATTERN: apps/solar-demo/ralph/ralph_hook_instructions.md contains 'eval(' - Security risk",
+      "PATTERN: apps/solar-demo/setup-gaep.sh contains 'eval(' - Security risk",
+      "PATTERN: apps/solar-demo/setup-gaep.sh contains 'process.env' - Direct env access forbidden - use config",
+      "PATTERN: apps/solar-demo/qontrek/governance/scan_manifest.yaml contains '// TODO' - Incomplete work",
+      "PATTERN: apps/solar-demo/qontrek/governance/scan_manifest.yaml contains 'console.log' - Debug code in production",
+      "PATTERN: apps/solar-demo/qontrek/mcp/validate.ts contains 'console.log' - Debug code in production",
+      "PATTERN: apps/solar-demo/ralph/agents.md contains 'console.log' - Debug code in production",
+      "PATTERN: apps/solar-demo/setup-gaep.sh contains '// TODO' - Incomplete work",
+      "PATTERN: apps/solar-demo/setup-gaep.sh contains 'console.log' - Debug code in production"
+    ]
   }
 ]
