@@ -1,0 +1,97 @@
+# GAEP Arbitrator Rules v1.0
+# Defines WHO can override WHAT and for HOW LONG
+
+version: "1.0"
+tenant: "solar"
+
+# =============================================================================
+# ARBITRATORS (Who can approve what)
+# =============================================================================
+
+arbitrators:
+  OWNER:
+    description: "Business owner - highest authority"
+    can_override: ["SOFT"]
+    cannot_override: ["HARD"]
+    max_override_value: 50000
+    requires_justification: true
+    sla_hours: 24
+    on_timeout: "BLOCK"
+
+  FINANCE:
+    description: "Finance manager"
+    can_override: ["SOFT"]
+    scope: ["G4_financial", "discount", "payment"]
+    max_override_value: 10000
+    requires_justification: true
+    sla_hours: 8
+    on_timeout: "ESCALATE_UP"
+
+  PROJECT_MANAGER:
+    description: "Project manager"
+    can_override: []
+    cannot_override: ["SOFT", "HARD"]
+    sla_hours: 4
+    on_timeout: "ESCALATE_UP"
+
+  BD_MANAGER:
+    description: "Business development manager"
+    can_override: []
+    scope: ["quote_review"]
+    sla_hours: 2
+    on_timeout: "ESCALATE_UP"
+
+# =============================================================================
+# ESCALATION CHAIN
+# =============================================================================
+
+escalation_chain:
+  default: ["BD_MANAGER", "PROJECT_MANAGER", "FINANCE", "OWNER"]
+  financial: ["FINANCE", "OWNER"]
+  legal: ["OWNER"]
+  technical: ["PROJECT_MANAGER", "OWNER"]
+
+# =============================================================================
+# ABSOLUTE BLOCKS (No one can override)
+# =============================================================================
+
+absolute_blocks:
+  - clause_id: "SOL.G4.BANK.REG.001"
+    reason: "Unregistered bank account - always block"
+  - clause_id: "SOL.G1.COMMIT.AUTH.001"
+    reason: "Unauthorized commit - always block"
+  - clause_id: "SOL.G4.TENANT.LEAK.001"
+    reason: "Cross-tenant data leakage - always block"
+
+# =============================================================================
+# TIMEOUT ACTIONS
+# =============================================================================
+
+timeout_actions:
+  BLOCK: "Reject action, log timeout violation"
+  ESCALATE_UP: "Move to next in chain, reset SLA"
+  AUTO_REJECT: "Reject with reason: governance_timeout"
+  NOTIFY_ONLY: "Continue waiting, send reminder"
+
+# =============================================================================
+# APPROVAL REQUIREMENTS
+# =============================================================================
+
+approval_requirements:
+  # Discounts over 10% need FINANCE or higher
+  discount_over_10:
+    min_role: "FINANCE"
+    requires_justification: true
+    log_to_ledger: true
+
+  # New customer onboarding needs PM
+  new_customer:
+    min_role: "PROJECT_MANAGER"
+    requires_justification: false
+    log_to_ledger: true
+
+  # Payment changes need OWNER
+  payment_change:
+    min_role: "OWNER"
+    requires_justification: true
+    log_to_ledger: true

@@ -1,0 +1,136 @@
+# Solar Policy Engine v1.0
+# 12 clauses governing Voltek Solar operations
+
+version: "1.0"
+tenant: "solar"
+effective_date: "2026-01-12"
+
+# =============================================================================
+# G1: AUTHORITY CLAUSES
+# =============================================================================
+
+gates:
+  G1_authority:
+    - clause_id: "SOL.G1.REQ_DEP.AUTH.001"
+      action: "REQUEST_DEPOSIT"
+      require: "role IN ['FINANCE', 'OWNER']"
+      severity: "HARD"
+      message: "Only FINANCE or OWNER can request deposits"
+
+    - clause_id: "SOL.G1.COMMIT.AUTH.001"
+      action: "COMMIT_ORDER"
+      require: "role IN ['PM', 'OWNER']"
+      severity: "HARD"
+      message: "Only PM or OWNER can commit orders"
+
+# =============================================================================
+# G2: SCOPE CLAUSES
+# =============================================================================
+
+  G2_scope:
+    - clause_id: "SOL.G2.QUOTE.SYS.001"
+      action: "GENERATE_QUOTE"
+      require: "price_source = 'system'"
+      severity: "HARD"
+      message: "All prices must be system-generated"
+
+    - clause_id: "SOL.G2.PROP.TPL.001"
+      action: "CREATE_PROPOSAL"
+      require: "template IN approved_templates"
+      severity: "HARD"
+      message: "Proposals must use approved templates only"
+
+    - clause_id: "SOL.G2.BOM.LOCK.001"
+      action: "FINALIZE_BOM"
+      require: "bom_hash = proposal_hash"
+      severity: "HARD"
+      message: "BOM must match proposal hash"
+
+    - clause_id: "SOL.G2.CLAIM.FORBID.001"
+      action: "CREATE_CONTENT"
+      forbid: "text CONTAINS 'guaranteed savings'"
+      severity: "HARD"
+      message: "No guaranteed savings claims allowed"
+
+    - clause_id: "SOL.G2.QUOTE.PROOF.001"
+      action: "GENERATE_QUOTE"
+      require: "quote_hash EXISTS"
+      severity: "HARD"
+      message: "Every quote must have proof hash"
+
+# =============================================================================
+# G3: DATA LEGALITY CLAUSES
+# =============================================================================
+
+  G3_data:
+    - clause_id: "SOL.G3.CONSENT.REQ.001"
+      action: "STORE_CUSTOMER_DATA"
+      require: "consent_given = true"
+      severity: "HARD"
+      message: "Customer consent required before storing data"
+
+    - clause_id: "SOL.G3.DATA.MIN.001"
+      action: "CREATE_QUOTE"
+      require: "address EXISTS AND tnb_bill EXISTS"
+      severity: "SOFT"
+      message: "Minimum data: address + TNB bill required"
+
+# =============================================================================
+# G4: FINANCIAL CLAUSES
+# =============================================================================
+
+  G4_financial:
+    - clause_id: "SOL.G4.MAX.DISC.001"
+      action: "APPLY_DISCOUNT"
+      require: "discount_percent <= 10"
+      severity: "SOFT"
+      message: "Discounts over 10% require approval"
+      escalate_to: "FINANCE"
+
+    - clause_id: "SOL.G4.MIN.MARGIN.001"
+      action: "FINALIZE_QUOTE"
+      require: "margin_percent >= 15"
+      severity: "SOFT"
+      message: "Minimum margin 15% required"
+      escalate_to: "FINANCE"
+
+    - clause_id: "SOL.G4.BANK.REG.001"
+      action: "RECEIVE_PAYMENT"
+      require: "bank_account IN registered_accounts"
+      severity: "HARD"
+      message: "Only registered bank accounts allowed"
+
+    - clause_id: "SOL.G4.DEPOSIT.LIMIT.001"
+      action: "REQUEST_DEPOSIT"
+      require: "deposit_percent <= 30"
+      severity: "SOFT"
+      message: "Maximum deposit 30% of contract"
+      escalate_to: "OWNER"
+
+    - clause_id: "SOL.G4.TENANT.001"
+      action: "ANY_DATA_ACCESS"
+      require: "tenant_id = current_tenant"
+      severity: "HARD"
+      message: "Cross-tenant data access forbidden"
+
+# =============================================================================
+# G5: JURISDICTION CLAUSES
+# =============================================================================
+
+  G5_jurisdiction:
+    - clause_id: "SOL.G5.TPL.B2C.001"
+      action: "CREATE_CONTRACT"
+      require: "template IN my_approved_templates"
+      severity: "HARD"
+      message: "Only MY-approved contract templates allowed"
+
+# =============================================================================
+# METADATA
+# =============================================================================
+
+metadata:
+  total_clauses: 15
+  hard_clauses: 11
+  soft_clauses: 4
+  last_updated: "2026-01-12"
+  updated_by: "system"

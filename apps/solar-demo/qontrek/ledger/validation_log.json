@@ -1,0 +1,66 @@
+[
+  {
+    "timestamp": "2026-01-12T04:11:57.347Z",
+    "commit_hash": "HEAD",
+    "story_id": "S-001",
+    "status": "PASS",
+    "failed_checks": [],
+    "changed_files": [
+      "apps/solar-demo/src/styles/globals.css"
+    ]
+  },
+  {
+    "timestamp": "2026-01-12T04:12:54.004Z",
+    "commit_hash": "HEAD",
+    "story_id": "S-001",
+    "status": "PASS",
+    "failed_checks": [],
+    "changed_files": [
+      "apps/solar-demo/src/styles/globals.css"
+    ]
+  },
+  {
+    "timestamp": "2026-01-12T04:13:28.470Z",
+    "commit_hash": "HEAD",
+    "story_id": "S-001",
+    "status": "PASS",
+    "failed_checks": [],
+    "changed_files": [
+      "apps/solar-demo/src/actions/testAction.ts"
+    ]
+  },
+  {
+    "timestamp": "2026-01-12T04:14:07.252Z",
+    "commit_hash": "HEAD",
+    "story_id": "S-001",
+    "status": "PASS",
+    "failed_checks": [],
+    "changed_files": [
+      "apps/solar-demo/src/actions/quoteHandler.ts"
+    ]
+  },
+  {
+    "timestamp": "2026-01-12T04:15:30.251Z",
+    "commit_hash": "HEAD",
+    "story_id": "S-001",
+    "status": "PASS",
+    "failed_checks": []
+  },
+  {
+    "timestamp": "2026-01-12T04:17:18.526Z",
+    "commit_hash": "HEAD",
+    "story_id": "S-001",
+    "status": "PASS",
+    "failed_checks": []
+  },
+  {
+    "timestamp": "2026-01-12T04:18:35.074Z",
+    "commit_hash": "HEAD",
+    "story_id": "S-001",
+    "status": "HARD_FAIL",
+    "failed_checks": [
+      "AUTHORITY: apps/solar-demo/src/actions/quoteHandler.ts - 'handleCreateQuote()' missing authority parameter",
+      "AUTHORITY: apps/solar-demo/src/actions/quoteHandler.ts - 'quoteAction()' missing authority parameter"
+    ]
+  }
+]

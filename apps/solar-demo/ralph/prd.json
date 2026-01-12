@@ -1,0 +1,130 @@
+{
+  "project": "solar-quote-enhancement",
+  "version": "1.0",
+  "policy_version": "SOL.v1.0",
+  "stories": [
+    {
+      "id": "S-001",
+      "title": "Add authority parameter to quote action",
+      "description": "Ensure createQuote action requires who_authorized parameter",
+      "clause_id": "SOL.G1.REQ_DEP.AUTH.001",
+      "severity": "HARD",
+      "invariants": ["AUTHORITY"],
+      "economic_effect": {
+        "type": "quote_authorization",
+        "affects": ["quote_validity", "dispute_liability"]
+      },
+      "acceptance_criteria": [
+        "createQuote function has who_authorized parameter",
+        "who_authorized is validated against allowed roles",
+        "Action fails if who_authorized is missing or invalid",
+        "who_authorized is logged with the quote record"
+      ],
+      "target_files": [
+        "src/actions/quote.ts"
+      ],
+      "passes": false
+    },
+    {
+      "id": "S-002",
+      "title": "Enforce system-generated pricing",
+      "description": "All quote prices must come from approved pricing table, not manual input",
+      "clause_id": "SOL.G2.QUOTE.SYS.001",
+      "severity": "HARD",
+      "invariants": ["PROOF", "ECONOMICS"],
+      "economic_effect": {
+        "type": "price_source",
+        "affects": ["margin", "commission_base", "dispute_proof"]
+      },
+      "acceptance_criteria": [
+        "Price is fetched from pricing_table by system_size",
+        "Manual price input is not accepted",
+        "price_source field is set to 'system'",
+        "pricing_table_id is stored with quote"
+      ],
+      "target_files": [
+        "src/services/pricing.ts",
+        "src/actions/quote.ts"
+      ],
+      "passes": false
+    },
+    {
+      "id": "S-003",
+      "title": "Add tenant isolation to quote queries",
+      "description": "All quote-related database queries must include tenant_id filter",
+      "clause_id": "SOL.G4.TENANT.001",
+      "severity": "HARD",
+      "invariants": ["TENANT"],
+      "economic_effect": {
+        "type": "data_isolation",
+        "affects": ["security", "compliance", "multi_tenant_integrity"]
+      },
+      "acceptance_criteria": [
+        "All SELECT queries on quotes table include WHERE tenant_id = ?",
+        "All UPDATE queries on quotes table include WHERE tenant_id = ?",
+        "All DELETE queries on quotes table include WHERE tenant_id = ?",
+        "No cross-tenant data leakage possible"
+      ],
+      "target_files": [
+        "src/db/quotes.ts",
+        "src/services/pricing.ts"
+      ],
+      "passes": false
+    },
+    {
+      "id": "S-004",
+      "title": "Generate quote hash for proof",
+      "description": "Each quote must have a unique hash for dispute resolution",
+      "clause_id": "SOL.G2.QUOTE.PROOF.001",
+      "severity": "HARD",
+      "invariants": ["PROOF"],
+      "economic_effect": {
+        "type": "proof_generation",
+        "affects": ["dispute_resolution", "audit_trail", "legal_validity"]
+      },
+      "acceptance_criteria": [
+        "quote_hash is generated using SHA256",
+        "Hash includes: customer_id, system_size, price, timestamp",
+        "quote_hash is stored in quotes table",
+        "quote_hash is returned in API response"
+      ],
+      "target_files": [
+        "src/actions/quote.ts",
+        "src/utils/hash.ts"
+      ],
+      "passes": false
+    },
+    {
+      "id": "S-005",
+      "title": "Add discount limit validation",
+      "description": "Discounts cannot exceed 10% without escalation",
+      "clause_id": "SOL.G4.MAX.DISC.001",
+      "severity": "SOFT",
+      "invariants": ["ECONOMICS", "ESCALATION"],
+      "economic_effect": {
+        "type": "discount_limit",
+        "max_value": 10,
+        "unit": "percent",
+        "affects": ["margin", "commission_base"]
+      },
+      "acceptance_criteria": [
+        "Discount percentage is validated before quote creation",
+        "Discounts > 10% trigger SOFT_FAIL requiring human approval",
+        "Discounts > 20% trigger HARD_FAIL (blocked)",
+        "discount_approved_by is logged if override granted"
+      ],
+      "target_files": [
+        "src/actions/quote.ts",
+        "src/validators/discount.ts"
+      ],
+      "passes": false
+    }
+  ],
+  "metadata": {
+    "created_at": "2026-01-12T00:00:00Z",
+    "created_by": "human",
+    "total_stories": 5,
+    "hard_stories": 4,
+    "soft_stories": 1
+  }
+}

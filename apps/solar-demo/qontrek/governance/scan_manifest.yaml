@@ -1,0 +1,130 @@
+# GAEP Scan Manifest v1.0
+# Defines what Ralph CAN and CANNOT touch
+# This file protects the governance system from AI modification
+
+version: "1.0"
+tenant: "solar"
+
+# =============================================================================
+# BOUNDARY DEFINITIONS
+# =============================================================================
+
+boundaries:
+  # Files Ralph IS ALLOWED to modify
+  allow:
+    - "src/actions/**/*.ts"
+    - "src/services/**/*.ts"
+    - "src/components/**/*.tsx"
+    - "src/pages/**/*.tsx"
+    - "src/db/**/*.ts"
+    - "src/utils/**/*.ts"
+    - "src/validators/**/*.ts"
+    - "src/lib/**/*.ts"
+
+  # Files Ralph is FORBIDDEN from touching
+  deny:
+    - "qontrek/**"           # Governance system itself
+    - "ralph/**"             # Ralph config (only human modifies)
+    - "ledger/**"            # Proof ledger
+    - ".env*"                # Environment secrets
+    - "package.json"         # Dependencies
+    - "package-lock.json"    # Lock file
+    - "next.config.js"       # Build config
+    - "tsconfig.json"        # TypeScript config
+    - "vercel.json"          # Deployment config
+    - ".git/**"              # Git internals
+    - "node_modules/**"      # Dependencies
+
+# =============================================================================
+# AST SCOPE (for structural validation)
+# =============================================================================
+
+ast_scope:
+  # Authority check: Ensure action handlers have who_authorized
+  authority_check:
+    enabled: true
+    files_to_scan:
+      - "src/actions/**/*.ts"
+      - "src/handlers/**/*.ts"
+      - "src/api/**/*.ts"
+    exclude:
+      - "**/*.test.ts"
+      - "**/*.spec.ts"
+      - "**/internal/**"
+    function_patterns:
+      - "*Action"
+      - "*Handler"
+      - "handle*"
+      - "create*"
+      - "update*"
+      - "delete*"
+    required_params:
+      - "who_authorized"
+      - "actor_id"         # Alternative acceptable param
+    fail_severity: "HARD"
+
+  # Tenant check: Ensure all queries have tenant_id
+  tenant_check:
+    enabled: true
+    files_to_scan:
+      - "src/db/**/*.ts"
+      - "src/services/**/*.ts"
+      - "src/queries/**/*.ts"
+    exclude:
+      - "**/*.test.ts"
+      - "**/migrations/**"
+    query_patterns:
+      - "supabase.from"
+      - "prisma."
+      - "db.query"
+      - ".select("
+      - ".update("
+      - ".delete("
+    required_clauses:
+      - "tenant_id"
+      - ".eq('tenant_id'"
+      - "where.*tenant"
+    fail_severity: "HARD"
+
+# =============================================================================
+# VALIDATION RULES
+# =============================================================================
+
+validation:
+  # Maximum lines changed per commit
+  max_lines_changed: 500
+  
+  # Maximum files changed per commit
+  max_files_changed: 10
+  
+  # Forbidden patterns in code
+  forbidden_patterns:
+    - pattern: "eval("
+      reason: "Security risk"
+      severity: "HARD"
+    - pattern: "process.env"
+      reason: "Direct env access forbidden - use config"
+      severity: "HARD"
+    - pattern: "// TODO"
+      reason: "Incomplete work"
+      severity: "SOFT"
+    - pattern: "console.log"
+      reason: "Debug code in production"
+      severity: "SOFT"
+
+# =============================================================================
+# ECONOMIC BOUNDARIES
+# =============================================================================
+
+economic:
+  # Maximum discount that can be coded without escalation
+  max_discount_percent: 10
+  
+  # Maximum monetary value per transaction
+  max_transaction_value: 100000
+  
+  # Forbidden economic actions
+  forbidden_actions:
+    - "direct_bank_transfer"
+    - "commission_override"
+    - "price_manual_set"
